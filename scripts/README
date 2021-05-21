@@ -1,7 +1,0 @@
-Copy a preprocess script to an experimental directory, then you can run the script.
-When extracting MFCC feature, the first dimension is ignored because it conveys only energy.
-
-gsc_preprocess.py: make acoustic features from Google Speech Commands.
-librispeech_preprocess.py: For LibriSpeech.
-
-remove_silence_libri.sh: Remove silence and divide utterances. Change line 3 and 7, which are output directory and original directory.
