@@ -1,0 +1,14 @@
+Remove silence and divide utterances:
+remove_silence_libri.sh
+remove_silence_gsc.sh
+
+Acoustic feature extraction:
+We use Numpy 2d-array whose first dimension is time and second one is acoustic feature's dimension.
+When extracting MFCC feature, the first dimension is ignored because it conveys only energy.
+
+gsc_preprocess.py: make acoustic features from Google Speech Commands.
+remsil_gsc_preprocess.py: make acoustic features from silence removed Google Speech Commands.
+librispeech_preprocess.py: For LibriSpeech.
+remsil_librispeech_preprocess.py: For silence removed LibriSpeech.
+
+
