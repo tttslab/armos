@@ -1,0 +1,14 @@
+VTL2.1_Linux.zip
+VTL2.1_Linux/
+
+**/JD2.speaker
+**/VocalTractLabApi.so
+
+data/train-clean-100.tar.gz
+data/speech_commands_v0.01.tar.gz
+
+LibriSpeech/
+remsil_LibriSpeech/
+gsc_remsil_mfcc/
+remsil_speech_commands_v0.01/
+speech_commands_v0.01/

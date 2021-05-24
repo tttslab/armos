@@ -63,12 +63,12 @@ fi
 
 if [ -e data/speech_commands_v0.01 -a ! -e data/remsil_speech_commands_v0.01 ]; then
     echo "removing silence with gsc"
-    (cd data; remove_silence_gsc.sh)
+    (cd data; ./remove_silence_gsc.sh)
 fi
 
 if [ -e data/LibriSpeech -a ! -e data/remsil_LibriSpeech ]; then
     echo "removing silence with libri"
-    (cd data; remove_silence_libri.sh)
+    (cd data; ./remove_silence_libri.sh)
 fi
 
 # extract acoustic features

@@ -4,7 +4,8 @@ mkdir -p remsil_LibriSpeech
 mkdir -p tmp
 
 name=1
-for sound in `ls LibriSpeech/train-clean-100/*/*/*.flac`; do
+# FIXME: Maybe something's wrong.
+for sound in `ls ./LibriSpeech/train-clean-100/*/*/*.flac`; do
     sox $sound tmp/out.wav silence 1 0.2 1% 1 0.2 1% : newfile : restart
 
     for splitted in `ls tmp/*.wav`; do
