@@ -12,3 +12,8 @@ remsil_LibriSpeech/
 gsc_remsil_mfcc/
 remsil_speech_commands_v0.01/
 speech_commands_v0.01/
+
+**/*.pyc
+
+log/
+exp/

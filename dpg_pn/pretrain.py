@@ -25,6 +25,7 @@ BATCH_SIZE          = int(conf.get('main', 'batch_size'))
 SAMPLING_RATE       = int(conf.get('main', 'sampling_rate'))
 NUM_PARAL           = int(conf.get('main', 'num_paral'))
 AUDIO_SEGMENT       = int(conf.get('main', 'audio_segment'))
+FRAMERATE_HZ        = int(conf.get('main', 'frameRate_Hz'))
 
 ### Condition Setting
 device       = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -50,7 +51,7 @@ for iteration in range(100):
     inputs            = torch.from_numpy(inputs).to(device)
     length            = np.asarray(length, dtype=np.int32) - 1
     length            = np.where(length > AUDIO_SEGMENT, AUDIO_SEGMENT, length)
-    dur               = 1.0*length / frameRate_Hz ### dimension is sec.
+    dur               = 1.0*length / FRAMERATE_HZ ### dimension is sec.
     target = torch.ones(BATCH_SIZE, AUDIO_SEGMENT, OUT_SIZE).to(device) * 0.5
 
     ### Get action

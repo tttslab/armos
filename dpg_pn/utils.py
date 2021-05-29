@@ -148,7 +148,7 @@ def Batch_generator(dataset, batch_size):
         MAX_FRAME_LENGTH = 0
         for i in range(batch_size):
             sample  = shuffled_data.pop()
-            feat    = np.load(FEAT_DIR + sample)
+            feat    = np.load(FEAT_DIR + sample, allow_pickle=True)
             MAX_FRAME_LENGTH = len(feat) if MAX_FRAME_LENGTH < len(feat) else MAX_FRAME_LENGTH
             index   = insert_index_descending_order(len(feat), length_batch)
             if i == 0:
