@@ -21,6 +21,7 @@ FEAT_TYPE     = conf.get('main', 'feat_type')
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 # This function is the same as the code in README.md of speech_commands
+# https://github.com/tensorflow/tensorflow/blob/40f9a0744af6e89f5e84980c02116ba670759b45/tensorflow/examples/speech_commands/input_data.py#L70
 MAX_NUM_WAVS_PER_CLASS = 2**27 - 1  # ~134M
 def which_set(filename, validation_percentage, testing_percentage):
   """Determines which data partition the file should belong to.
@@ -79,36 +80,37 @@ validation_list = open(outdir+'validation_list.txt', 'a')
 for command in datalist:
     if os.path.exists(outdir+command+'/.complete'):     # check if data exist. if true, skip feature generation, 
         logging.info(command+' data is already prepared')
-    else:
-        logging.info('Processing `'+command+'`... ')
-        if not os.path.exists(outdir+command):
-          os.makedirs(outdir+command)
+        continue
+    
+    logging.info('Processing `'+command+'`... ')
+    if not os.path.exists(outdir+command):
+      os.makedirs(outdir+command)
 
-        for wavfile in os.listdir(wavedir+command):
-            audio, sr = librosa.load(wavedir+command+'/'+wavfile, sr=SAMPLING_RATE)  # load wav file
+    for wavfile in os.listdir(wavedir+command):
+        audio, sr = librosa.load(wavedir+command+'/'+wavfile, sr=SAMPLING_RATE)  # load wav file
 
-            if   FEAT_TYPE == 'mfcc':
-              feats = librosa.feature.mfcc(audio, sr=SAMPLING_RATE, n_mfcc=FEAT_DIM+1, n_fft=int(SAMPLING_RATE/40.0), hop_length=int(SAMPLING_RATE/100.0))
-              feats = np.asarray(feats, dtype=np.float32)
-              feats = feats[1:, :]
-            elif FEAT_TYPE == 'fbank':
-              feats = librosa.feature.melspectrogram(audio, sr=SAMPLING_RATE, n_mels=FEAT_DIM, n_fft=int(SAMPLING_RATE/40.0), hop_length=int(SAMPLING_RATE/100.0))
-              feats = np.asarray(feats, dtype=np.float32)
-            elif FEAT_TYPE == 'logfbank':
-              feats = librosa.feature.melspectrogram(audio, sr=SAMPLING_RATE, n_mels=FEAT_DIM, n_fft=int(SAMPLING_RATE/40.0), hop_length=int(SAMPLING_RATE/100.0))
-              feats = np.log(np.asarray(feats+1e-30, dtype=np.float32))
+        if   FEAT_TYPE == 'mfcc':
+          feats = librosa.feature.mfcc(audio, sr=SAMPLING_RATE, n_mfcc=FEAT_DIM+1, n_fft=int(SAMPLING_RATE/40.0), hop_length=int(SAMPLING_RATE/100.0))
+          feats = np.asarray(feats, dtype=np.float32)
+          feats = feats[1:, :]
+        elif FEAT_TYPE == 'fbank':
+          feats = librosa.feature.melspectrogram(audio, sr=SAMPLING_RATE, n_mels=FEAT_DIM, n_fft=int(SAMPLING_RATE/40.0), hop_length=int(SAMPLING_RATE/100.0))
+          feats = np.asarray(feats, dtype=np.float32)
+        elif FEAT_TYPE == 'logfbank':
+          feats = librosa.feature.melspectrogram(audio, sr=SAMPLING_RATE, n_mels=FEAT_DIM, n_fft=int(SAMPLING_RATE/40.0), hop_length=int(SAMPLING_RATE/100.0))
+          feats = np.log(np.asarray(feats+1e-30, dtype=np.float32))
 
-            np.save(outdir+command+'/'+wavfile[:-4]+'.npy', feats.T)  # save features
-            partition = which_set(wavfile, 10, 10)                   # divide to "training", "validation", "testing" 3 parts
-            if partition == 'training':
-                training_list.write(command+'/'+wavfile[:-4]+'.npy\n')
-            if partition == 'testing':
-                testing_list.write(command+'/'+wavfile[:-4]+'.npy\n')
-            if partition == 'validation':
-                validation_list.write(command+'/'+wavfile[:-4]+'.npy\n')
+        np.save(outdir+command+'/'+wavfile[:-4]+'.npy', feats.T)  # save features
+        partition = which_set(wavfile, 10, 10)                   # divide to "training", "validation", "testing" 3 parts
+        if partition == 'training':
+            training_list.write(command+'/'+wavfile[:-4]+'.npy\n')
+        if partition == 'testing':
+            testing_list.write(command+'/'+wavfile[:-4]+'.npy\n')
+        if partition == 'validation':
+            validation_list.write(command+'/'+wavfile[:-4]+'.npy\n')
 
-        with open(outdir+command+'/.complete', 'w') as f:
-          f.write('complete preprocess')
+    with open(outdir+command+'/.complete', 'w') as f:
+      f.write('complete preprocess')
 
 training_list.close()
 testing_list.close()

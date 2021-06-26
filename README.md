@@ -95,7 +95,7 @@ The log is saved in log/test.log.
 
 To calculate correlation coefficient for test data:
 ```bash=
-$ ./eval_corr.sh
+./eval_corr.sh
 ```
 If you write "seq 1 10" in eval_corr.sh, evaluate the model from 1000 to 10000 iteration.
 
