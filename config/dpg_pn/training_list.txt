@@ -19505,8 +19505,6 @@ up/ccb1266b_nohash_0.npy
 up/8e05039f_nohash_2.npy
 up/520b2c17_nohash_1.npy
 up/f9af823e_nohash_0.npy
-validation_list.txt
-training_list.txt
 cat/b15fc37d_nohash_1.npy
 cat/51f4d5b0_nohash_0.npy
 cat/67fcdb05_nohash_0.npy
@@ -31720,7 +31718,6 @@ bed/605ed0ff_nohash_1.npy
 bed/493392c6_nohash_1.npy
 bed/ccb1266b_nohash_0.npy
 bed/f9af823e_nohash_0.npy
-testing_list.txt
 go/97f4c236_nohash_1.npy
 go/51f4d5b0_nohash_0.npy
 go/67fcdb05_nohash_0.npy

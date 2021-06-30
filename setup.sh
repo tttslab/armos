@@ -13,6 +13,16 @@ else
     exit
 fi
 
+# TODO: ちゃんと動くかどうかの確認
+for $dir in exp log; do
+    if [ ! -d $dir ]; then
+        mkdir $dir
+        for $subdir in policy_gradient actor_critic dpg_pn; do
+            mkdir exp/$subdir
+        done
+    fi
+done
+
 # download VTL
 VTLPKG=https://www.vocaltractlab.de/download-vocaltractlabapi/VTL2.1_Linux.zip
 if [ ! -e VTL2.1_Linux ]; then
@@ -24,7 +34,8 @@ if [ ! -e VTL2.1_Linux ]; then
     fi
 fi
 
-for dir in policy_gradient actor_critic dpg_pn; do
+# TODO: 将来的には ./　のみにする
+for dir in policy_gradient actor_critic dpg_pn ./; do
     echo $dir
     if [ ! -e $dir/JD2.speaker ]; then
 	cp -p VTL2.1_Linux/JD2.speaker $dir

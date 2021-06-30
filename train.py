@@ -49,7 +49,7 @@ if model_name == "dpg_pn":
                     Q_LEARNING_RATE,
                     BATCH_SIZE)
 else:
-    raise ValueError('The first arg should be avalue of "dpg"')
+    raise ValueError('The first arg should be avalue of "dpg_pn"')
 
 env = VTLEnv(
     IN_SIZE=IN_SIZE,
@@ -59,7 +59,7 @@ env = VTLEnv(
     NUM_PARAL=NUM_PARAL)
 state = env.reset()
 
-for iteration in range(1000): #0000):
+for iteration in range(10000000):
     start = time.time()
 
     action = agent.act(state)
