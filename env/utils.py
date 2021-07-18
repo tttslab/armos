@@ -37,6 +37,7 @@ def trans_param(param):
 
 ### This function is for multiprocessing.
 ### Assume attaching 5 pseudo frames to first and last of param sequence.
+### This function returns feats
 def synthesis(tractParams, glottisParams, duration, queue):
     synthesized = TractSeqToWave_Func.vtlSynthesize(tractParams, glottisParams, duration+frameRate_Hz/1000.0)
     synthesized = librosa.core.resample(synthesized.squeeze(), 22050, 16000)
@@ -84,6 +85,8 @@ def reward(batch_rec_feats, inputs, length):
 def calc_reward(inputs, tractParams, glottisParams, length, dur, num_paral):
     batch_rec_feats = []
     t_param        = tractParams.to('cpu')
+    # inputs.shape[0]は多分バッチサイズ
+    # 最初と最後に擬似フレームを付与する
     t_tmp          = torch.zeros(inputs.shape[0], 5, 24)
     t_tmp[:, 2, :] = t_param[:, 0, :] / 3
     t_tmp[:, 3, :] = t_param[:, 0, :] * 2 / 3
@@ -112,11 +115,13 @@ def calc_reward(inputs, tractParams, glottisParams, length, dur, num_paral):
         for proc in process:
             proc.start()
         for q in queue:
+            # putが発生されるまでは処理が止まる
             rec_feats.append(q.get())
         for proc in process:
             proc.join()
 
         batch_rec_feats += rec_feats
+    ### 計算された報酬ではなく生成された特徴量を返してる
     return batch_rec_feats
     #return reward(batch_rec_feats, inputs, length)
 
@@ -126,6 +131,7 @@ def insert_index_descending_order(query, num_list):
     if len(matching_list) == 0:
         return len(num_list)
     else:
+        # もともと大きい順にソートされているのでmatching_listの先頭が新たな挿入位置
         return num_list.index(matching_list[0])
 
 ### Make mini-batch.
@@ -148,6 +154,7 @@ def Batch_generator(dataset, batch_size):
         length_batch    = []
         duration_batch  = []
         numFrames_batch = []
+        # バッチの中で最も長いフレーム数　なぜ大文字なのかは不明
         MAX_FRAME_LENGTH = 0
         for i in range(batch_size):
             sample  = shuffled_data.pop()
@@ -167,6 +174,9 @@ def Batch_generator(dataset, batch_size):
             shuffled_data = random.sample(datalist, len(datalist)) + shuffled_data
             epoch        += 1
 
+        # data_batch内には特徴量（バッチ内で最もフレーム数の大きなものに合わせて0詰めされており、降順に並んでいる。保存時に転置をとっていることにも注意）
+        # length_batchはバッチ内の各データの0詰めされていない状態での長さを表している
+        # epochはデータを何周したのか
         yield data_batch, length_batch, epoch
 
 class OUNoise:

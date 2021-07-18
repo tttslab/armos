@@ -22,6 +22,8 @@ FEAT_TYPE     = conf.get('main', 'feat_type')
 #------------------------------------------------------------------------------
 # This function is the same as the code in README.md of speech_commands
 # https://github.com/tensorflow/tensorflow/blob/40f9a0744af6e89f5e84980c02116ba670759b45/tensorflow/examples/speech_commands/input_data.py#L70
+# ハッシュ関数を利用してtrain, validation, testの振り分けを行っている
+# 元のデータの数字は話者を表している
 MAX_NUM_WAVS_PER_CLASS = 2**27 - 1  # ~134M
 def which_set(filename, validation_percentage, testing_percentage):
   """Determines which data partition the file should belong to.
@@ -101,7 +103,7 @@ for command in datalist:
           feats = np.log(np.asarray(feats+1e-30, dtype=np.float32))
 
         np.save(outdir+command+'/'+wavfile[:-4]+'.npy', feats.T)  # save features
-        partition = which_set(wavfile, 10, 10)                   # divide to "training", "validation", "testing" 3 parts
+        partition = which_set(wavfile, 10, 10)                    # divide to "training", "validation", "testing" 3 parts
         if partition == 'training':
             training_list.write(command+'/'+wavfile[:-4]+'.npy\n')
         if partition == 'testing':

@@ -59,7 +59,7 @@ env = VTLEnv(
     NUM_PARAL=NUM_PARAL)
 state = env.reset()
 
-for iteration in range(10000000):
+for iteration in range(30000):# 000):
     start = time.time()
 
     action = agent.act(state)

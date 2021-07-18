@@ -30,20 +30,7 @@ class VTLEnv():
     def step(self, action):
         noise_act, normal_act = action
 
-        ### Assume the duration is multiple of 10ms.
-        ### For example, if the time length of input feature is 101, this sound is from 1000ms to 1009ms,
-        ### but I regard this as 1000ms and ignore the last feature.
-        inputs, length, _ = next(self.loader)
-
-        feats = np.zeros((self.BATCH_SIZE, self.AUDIO_SEGMENT, self.IN_SIZE))
-        for i in range(self.BATCH_SIZE):
-            s_pos    = np.random.randint(length[i]-self.AUDIO_SEGMENT+1)
-            feats[i] = inputs[i, s_pos:s_pos+self.AUDIO_SEGMENT,:]
-        inputs = np.asarray(feats, dtype=np.float32)
-        inputs            = torch.from_numpy(inputs).to(self.device)
-        length            = np.asarray(length, dtype=np.int32) - 1
-        length            = np.where(length > self.AUDIO_SEGMENT, self.AUDIO_SEGMENT, length)
-        dur               = 1.0 * length / self.FRAME_RATE_HZ ### dimension is sec.
+        inputs, length, dur_s = self._get_inputs()
 
         ### Store parameters
         tractParams   = utils.trans_param(noise_act)[:, :, :24]
@@ -52,8 +39,8 @@ class VTLEnv():
         r_calc_g      = utils.trans_param(normal_act.detach())[:, :, -6:]
 
         ### Reward calculation
-        reward = utils.calc_reward(inputs, tractParams, glottisParams, length, dur, self.NUM_PARAL)
-        r_calc = utils.calc_reward(inputs, r_calc_t,    r_calc_g,      length, dur, self.NUM_PARAL)
+        reward = utils.calc_reward(inputs, tractParams, glottisParams, length, dur_s, self.NUM_PARAL)
+        r_calc = utils.calc_reward(inputs, r_calc_t,    r_calc_g,      length, dur_s, self.NUM_PARAL)
         self.reward_mean = 0
         for i in range(self.BATCH_SIZE):
             self.reward_mean += F.mse_loss(torch.from_numpy(r_calc[i][:length[i]]).to(self.device), inputs[i, :length[i]], reduction='none').mean(dim=1).sum()
@@ -71,17 +58,26 @@ class VTLEnv():
 
     def reset(self):
         self.reward_mean = 0
+        inputs, length, _ = self._get_inputs()
+
+        return (inputs, length)
+
+    def _get_inputs(self):
+        ### Assume the dur_sation is multiple of 10ms.
+        ### For example, if the time length of input feature is 101, this sound is from 1000ms to 1009ms,
+        ### but I regard this as 1000ms and ignore the last feature.
         inputs, length, _ = next(self.loader)
 
-        # TODO: ここで何をやっているのかを正確に把握して関数化する
         feats = np.zeros((self.BATCH_SIZE, self.AUDIO_SEGMENT, self.IN_SIZE))
         for i in range(self.BATCH_SIZE):
+            # ランダムでAUDIO_SEGMENTmsだけ切り出す
             s_pos    = np.random.randint(length[i]-self.AUDIO_SEGMENT+1)
             feats[i] = inputs[i, s_pos:s_pos+self.AUDIO_SEGMENT,:]
         inputs = np.asarray(feats, dtype=np.float32)
         inputs            = torch.from_numpy(inputs).to(self.device)
-        length            = np.asarray(length, dtype=np.int32) - 1
-        length            = np.where(length > self.AUDIO_SEGMENT, self.AUDIO_SEGMENT, length)
-        dur               = 1.0 * length / self.FRAME_RATE_HZ ### dimension is sec.
+        length            = np.asarray(length, dtype=np.int32) - 1 # 最後のフレームは無視
+        length            = np.where(length > self.AUDIO_SEGMENT, self.AUDIO_SEGMENT, length) # audiosegmentより長いlengthはaudiosegmentとする TODO:実際のlengthの値の確認、多分全部10になる？
+        dur_s             = 1.0 * length / self.FRAME_RATE_HZ ### 音声の再生時間[s] (lengthはフレーム数、frame_rate_hzは１秒あたりのフレーム数)
 
-        return (inputs, length)
+        return (inputs, length, dur_s)
+        
