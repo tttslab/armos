@@ -14,10 +14,10 @@ else
 fi
 
 # TODO: ちゃんと動くかどうかの確認
-for $dir in exp log; do
+for dir in exp log; do
     if [ ! -d $dir ]; then
         mkdir $dir
-        for $subdir in policy_gradient actor_critic dpg_pn; do
+        for subdir in policy_gradient actor_critic dpg_pn; do
             mkdir exp/$subdir
         done
     fi
