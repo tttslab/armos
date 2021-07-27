@@ -140,9 +140,9 @@ def Batch_generator(dataset, batch_size):
     if dataset == 'training':
         datalist_txt = open('config/dpg_pn/training_list.txt', 'r')
     elif dataset == 'testing':
-        datalist_txt = open('datalist/testing_list.txt', 'r')
+        datalist_txt = open('config/dpg_pn/testing_list.txt', 'r')
     elif dataset == 'validation':
-        datalist_txt = open('datalist/validation_list.txt', 'r')
+        datalist_txt = open('config/dpg_pn/validation_list.txt', 'r')
 
     datalist      = datalist_txt.read().strip().split('\n')
     shuffled_data = random.sample(datalist, len(datalist))
