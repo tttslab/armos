@@ -5,7 +5,8 @@ import scipy.io.wavfile # to write wav file
 import configparser
 
 conf = configparser.SafeConfigParser()
-conf.read("config.ini")
+# TODO: dpg
+conf.read("config/dpg_pn/config.ini")
 frameRate_Hz = int(conf.get('main', 'frameRate_Hz'))
 
 def vtlSynthesize(tractParams, glottisParams, duration_s):
