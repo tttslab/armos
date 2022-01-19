@@ -41,6 +41,25 @@ class stacked_BLSTM(nn.Module):
         blstm_out, _      = nn.utils.rnn.pad_packed_sequence(blstm_out, batch_first=True)
         return self.sigmoid(self.fc(blstm_out, noise))
 
+class stacked_Attention(nn.Module):
+    def __init__(self, in_size, out_size, hidden_size, delta):
+        super(stacked_Attention, self).__init__()
+        self.attention = nn.MultiheadAttention(embed_dim=in_size, num_heads=4, bias=False)
+        self.fc = NoisyLinear(in_size, hidden_size, sigma_init=delta)
+        self.fc2 = nn.Linear(hidden_size, out_size)
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, inputs, length, noise):
+        inputs = nn.utils.rnn.pad_sequence(inputs, batch_first=True)
+        inputs = inputs.transpose(1, 0)
+        attn, _ = self.attention(inputs, inputs, inputs)
+        attn = attn.transpose(1, 0)
+        h = self.fc(attn, noise)
+        h = self.relu(h)
+        return self.sigmoid(self.fc2(h))
+      
+
 class Qfunction(nn.Module):
     def __init__(self, state_dim, action_dim, hidden_size):
         super(Qfunction, self).__init__()
@@ -58,4 +77,20 @@ class Qfunction(nn.Module):
         q_value, _      = nn.utils.rnn.pad_packed_sequence(q_value, batch_first=True)
         #q_value         = torch.cat((h[-2], h[-1]), dim=1)
         q_value         = self.out_q(q_value)
+        return q_value
+
+class AttentionQfunction(nn.Module):
+    def __init__(self, state_dim, action_dim, hidden_size):
+        super(AttentionQfunction, self).__init__()
+        self.act_embed = nn.Linear(action_dim, hidden_size)
+        self.attention = nn.MultiheadAttention(embed_dim=hidden_size, num_heads=4, bias=False)
+        self.out_q = nn.Linear(hidden_size, state_dim)
+
+    def forward(self, action, length):
+        a_emb = self.act_embed(action)
+        embeded = nn.utils.rnn.pad_sequence(a_emb, batch_first=True)
+        embeded = embeded.transpose(1, 0)
+        attn, _ = self.attention(embeded, embeded, embeded)
+        attn = attn.transpose(1, 0)
+        q_value = self.out_q(attn)
         return q_value
