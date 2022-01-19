@@ -33,9 +33,11 @@ frameRate_Hz        = int(conf.get('main', 'frameRate_Hz'))
 ### Condition Setting
 device       = 'cuda' if torch.cuda.is_available() else 'cpu'
 # policy       = models.stacked_BLSTM(IN_SIZE, OUT_SIZE, P_HIDDEN_SIZE, P_NUM_LAYERS, SIGMA_INIT).to(device)
-policy       = models.stacked_Attention(IN_SIZE, OUT_SIZE, P_HIDDEN_SIZE, SIGMA_INIT).to(device)
+# policy       = models.stacked_Attention(IN_SIZE, OUT_SIZE, P_HIDDEN_SIZE, SIGMA_INIT).to(device)
+policy       = models.stacked_BLSTM_Attention(IN_SIZE, OUT_SIZE, P_HIDDEN_SIZE, P_NUM_LAYERS, SIGMA_INIT).to(device)
 # q_func       = models.Qfunction(IN_SIZE, OUT_SIZE, Q_HIDDEN_SIZE).to(device)
-q_func       = models.AttentionQfunction(IN_SIZE, OUT_SIZE, Q_HIDDEN_SIZE).to(device)
+# q_func       = models.AttentionQfunction(IN_SIZE, OUT_SIZE, Q_HIDDEN_SIZE).to(device)
+q_func       = models.BLSTMAttentionQfunction(IN_SIZE, OUT_SIZE, Q_HIDDEN_SIZE).to(device)
 ou_noise     = utils.OUNoise(BATCH_SIZE, OUT_SIZE)
 loss_fun     = nn.MSELoss(reduction='none')
 p_optim      = torch.optim.SGD(policy.parameters(), lr=P_LEARNING_RATE)

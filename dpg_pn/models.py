@@ -58,6 +58,27 @@ class stacked_Attention(nn.Module):
         h = self.fc(attn, noise)
         h = self.relu(h)
         return self.sigmoid(self.fc2(h))
+
+class stacked_BLSTM_Attention(nn.Module):
+    def __init__(self, in_size, out_size, hidden_size, num_layers, delta):
+        super(stacked_BLSTM_Attention, self).__init__()
+        self.blstm   = nn.LSTM(in_size, hidden_size, num_layers=num_layers, batch_first=True, bidirectional=True)
+        self.attention = nn.MultiheadAttention(embed_dim=hidden_size*2, num_heads=4, bias=False)
+        self.fc = NoisyLinear(hidden_size*2, hidden_size, sigma_init=delta)
+        self.fc2 = nn.Linear(hidden_size, out_size)
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, inputs, length, noise):
+        inputs = nn.utils.rnn.pack_padded_sequence(inputs, length, batch_first=True)
+        blstm_out, (h, c) = self.blstm(inputs)
+        blstm_out, _      = nn.utils.rnn.pad_packed_sequence(blstm_out, batch_first=True)
+        blstm_out = blstm_out.transpose(1, 0)
+        attn, _ = self.attention(blstm_out, blstm_out, blstm_out)
+        attn = attn.transpose(1, 0)
+        h = self.fc(attn, noise)
+        h = self.relu(h)
+        return self.sigmoid(self.fc2(h))
       
 
 class Qfunction(nn.Module):
@@ -94,3 +115,27 @@ class AttentionQfunction(nn.Module):
         attn = attn.transpose(1, 0)
         q_value = self.out_q(attn)
         return q_value
+
+class BLSTMAttentionQfunction(nn.Module):
+    def __init__(self, state_dim, action_dim, hidden_size):
+        super(BLSTMAttentionQfunction, self).__init__()
+        self.act_embed = nn.Linear(action_dim, hidden_size)
+        self.attention = nn.MultiheadAttention(embed_dim=hidden_size*2, num_heads=4, bias=False)
+        self.blstm      = nn.LSTM(hidden_size, hidden_size, num_layers=3, batch_first=True, bidirectional=True)
+        self.relu = nn.ReLU()
+        self.fc = nn.Linear(hidden_size*2, hidden_size)
+        self.out_q = nn.Linear(hidden_size, state_dim)
+
+    def forward(self, action, length):
+        a_emb = self.act_embed(action)
+        embeded         = nn.utils.rnn.pack_padded_sequence(a_emb, length, batch_first=True)
+        blstm_out, (h, c) = self.blstm(embeded)
+        blstm_out, _      = nn.utils.rnn.pad_packed_sequence(blstm_out, batch_first=True)
+        blstm_out = blstm_out.transpose(1, 0)
+        attn, _ = self.attention(blstm_out, blstm_out, blstm_out)
+        attn = attn.transpose(1, 0)
+        h = self.fc(attn)
+        h = self.relu(h)
+        q_value = self.out_q(h)
+        return q_value
+

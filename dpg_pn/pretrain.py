@@ -30,7 +30,8 @@ FRAMERATE_HZ        = int(conf.get('main', 'frameRate_Hz'))
 ### Condition Setting
 device       = 'cuda' if torch.cuda.is_available() else 'cpu'
 # policy       = models.stacked_BLSTM(IN_SIZE, OUT_SIZE, P_HIDDEN_SIZE, P_NUM_LAYERS, 0).to(device)
-policy       = models.stacked_Attention(IN_SIZE, OUT_SIZE, P_HIDDEN_SIZE, 0).to(device)
+# policy       = models.stacked_Attention(IN_SIZE, OUT_SIZE, P_HIDDEN_SIZE, 0).to(device)
+policy       = models.stacked_BLSTM_Attention(IN_SIZE, OUT_SIZE, P_HIDDEN_SIZE, P_NUM_LAYERS, 0).to(device)
 loss_fun     = nn.MSELoss()
 p_optim      = torch.optim.Adam(policy.parameters(), lr=1e-3)
 train_loader = utils.Batch_generator('training', BATCH_SIZE)
